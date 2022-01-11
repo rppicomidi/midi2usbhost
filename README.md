@@ -1,4 +1,4 @@
-# Pico-USB-Host-MIDI-Adapter
+# midi2usbhost
 Use a Raspbery Pi Pico to add old school MIDI IN and MIDI OUT to MIDI devices with a USB B device port
 # Disclaimers
 This is a hardware and software project. The MIDI gadgets you will wire to this hardware will likely
