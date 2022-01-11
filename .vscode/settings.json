@@ -1,0 +1,35 @@
+{
+    // These settings tweaks to the cmake plugin will ensure
+    // that you debug using cortex-debug instead of trying to launch
+    // a Pico binary on the host
+    "cmake.statusbar.advanced": {
+        "debug": {
+            "visibility": "hidden"
+        },
+        "launch": {
+            "visibility": "hidden"
+        },
+        "build": {
+            "visibility": "hidden"
+        },
+        "buildTarget": {
+            "visibility": "hidden"
+        }
+    },
+    "cmake.buildBeforeRun": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cortex-debug.variableUseNaturalFormat": false,
+    "files.associations": {
+        "usbh_classdriver.h": "c",
+        "tusb_option.h": "c",
+        "tusb.h": "c",
+        "midi_device.h": "c",
+        "hid_host.h": "c",
+        "midi_host.h": "c",
+        "midi.h": "c",
+        "usbd_pvt.h": "c",
+        "limits": "c",
+        "type_traits": "c",
+        "binary_info.h": "c"
+    }
+}
