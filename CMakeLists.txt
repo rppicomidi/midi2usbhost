@@ -13,6 +13,11 @@ target_sources(ring_buffer_lib INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/ring_buffer_lib.c
 )
 
+add_library(midi_uart_lib INTERFACE)
+target_sources(midi_uart_lib INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/midi_uart_lib.c
+)
+
 add_executable(midi2usbhost
     midi2usbhost.c
 )
@@ -21,7 +26,7 @@ pico_enable_stdio_uart(midi2usbhost 1)
 
 target_include_directories(midi2usbhost PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-target_link_libraries(midi2usbhost tinyusb_host tinyusb_board ring_buffer_lib pico_stdlib)
+target_link_libraries(midi2usbhost midi_uart_lib tinyusb_host tinyusb_board ring_buffer_lib pico_stdlib)
 
 pico_add_extra_outputs(midi2usbhost)
 

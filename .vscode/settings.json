@@ -30,6 +30,9 @@
         "usbd_pvt.h": "c",
         "limits": "c",
         "type_traits": "c",
-        "binary_info.h": "c"
+        "binary_info.h": "c",
+        "sync.h": "c",
+        "uart_midi_lib.h": "c",
+        "ring_buffer_lib.h": "c"
     }
 }
