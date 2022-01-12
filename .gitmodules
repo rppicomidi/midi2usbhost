@@ -1,0 +1,3 @@
+[submodule "lib/midi_uart_lib"]
+	path = lib/midi_uart_lib
+	url = https://github.com/rppicomidi/midi_uart_lib.git

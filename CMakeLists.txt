@@ -3,20 +3,12 @@ cmake_minimum_required(VERSION 3.13)
 set(BOARD pico_sdk)
 include(pico_sdk_import.cmake)
 
-project(Pico-USB-Host-MIDI-Adapter C CXX ASM)
+project(midi2usbhost C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
-add_library(ring_buffer_lib INTERFACE)
-target_sources(ring_buffer_lib INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/ring_buffer_lib.c
-)
-
-add_library(midi_uart_lib INTERFACE)
-target_sources(midi_uart_lib INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/midi_uart_lib.c
-)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/midi_uart_lib)
 
 add_executable(midi2usbhost
     midi2usbhost.c

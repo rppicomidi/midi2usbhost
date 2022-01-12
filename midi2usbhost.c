@@ -64,18 +64,30 @@ static void blink_led(void)
     }
 }
 
-static void poll_usb_rx(void)
+static void poll_usb_rx(bool connected)
 {
-  // device must be attached and have at least one endpoint ready to receive a message
-  if (!midi_dev_addr || !tuh_midi_configured(midi_dev_addr))
-  {
-    return;
-  }
-  if (tuh_midih_get_num_rx_cables(midi_dev_addr) < 1)
-  {
-    return;
-  }
-  tuh_midi_read_poll(midi_dev_addr);
+    // device must be attached and have at least one endpoint ready to receive a message
+    if (!connected || tuh_midih_get_num_rx_cables(midi_dev_addr) < 1)
+    {
+        return;
+    }
+    tuh_midi_read_poll(midi_dev_addr);
+}
+
+
+static void poll_midi_uart_rx(bool connected)
+{
+    uint8_t rx[48];
+    // Pull any bytes received on the MIDI UART out of the receive buffer and
+    // send them out via USB MIDI on virtual cable 0
+    uint8_t nread = midi_uart_poll_rx_buffer(midi_uart_instance, rx, sizeof(rx));
+    if (nread > 0 && connected && tuh_midih_get_num_tx_cables(midi_dev_addr) >= 1)
+    {
+        uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0,rx, nread);
+        if (nwritten != nread) {
+            TU_LOG1("Warning: Dropped %d bytes receiving from UART MIDI In\r\n", nread - nwritten);
+        }
+    }
 }
 
 int main() {
@@ -97,21 +109,12 @@ int main() {
         tuh_task();
 
         blink_led();
-
-        uint8_t rx[48];
-        uint8_t nread = midi_uart_poll_rx_buffer(midi_uart_instance, rx, sizeof(rx));
         bool connected = midi_dev_addr != 0 && tuh_midi_configured(midi_dev_addr);
-        if (nread > 0 && connected && tuh_midih_get_num_tx_cables(midi_dev_addr) >= 1)
-        {
-            // Send it out
-            uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0,rx, nread);
-            if (nwritten != nread) {
-                TU_LOG1("Warning: Dropped %d bytes receiving from UART MIDI In\r\n", nread - nwritten);
-            }
-        }
+
+        poll_midi_uart_rx(connected);
         if (connected)
             tuh_midi_stream_flush(midi_dev_addr);
-        poll_usb_rx();
+        poll_usb_rx(connected);
         midi_uart_drain_tx_buffer(midi_uart_instance);
     }
 }
