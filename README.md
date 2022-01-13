@@ -60,6 +60,9 @@ picoprobe VBUS -> Pico B VBUS
 This project uses the the Raspberry Pi Pico SDK and it uses the tinyusb library for the USB stack. At the time
 of this writing my pull request for supporting USB MIDI host is still pending, so please use my forked tinyusb
 library until it is accepted.
+
+This project also depends on the midi\_uart\_lib and ring\_buffer\_lib projects. They are included as git
+submodules.
 # Setting Up Your Build and Debug Environment
 I am running Ubuntu Linux 20.04LTS on an old PC. I have Visual Studio Code (VS Code)
 installed and went
@@ -97,7 +100,7 @@ Clone the midiusb2host project to a directory at the same level as the pico-sdk 
 
 ```
 cd [one directory above the pico-sdk directory]
-git clone https://github.com/midiusb2host.git
+git clone --recurse-submodules https://github.com/midiusb2host.git
 ```
 
 ## Set up and launch Visual Studio Code

@@ -26,13 +26,16 @@
  * 
  */
 
+
+#ifndef MIDI_UART_LIB_CONFIG_H
+#define MIDI_UART_LIB_CONFIG_H
+
 // Legal values for SERIAL_PORT_MIDI_NUM_UARTS:
 // 1: assigns RP2040 UART1 to MIDI and does not assign UART0
 // 2: assigns both RP2040 UART0 and UART1 to MIDI
 // Any other value will cause a compiler error
 // Note if you use both serial ports for MIDI then neither will
 // be available for debugging
-#ifndef MIDI_UART_LIB_CONFIG_H
-#define MIDI_UART_LIB_CONFIG_H
 #define SERIAL_PORT_MIDI_NUM_UARTS 1
+
 #endif
