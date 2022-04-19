@@ -80,7 +80,7 @@ incorporated in the main repository for tinyusb, you will need to use my forked 
 document.
 2. Create an "upstream" remote.
 ```
-git remote add upstream https://github.com/hatach/tinyusb.git
+git remote add upstream https://github.com/hathach/tinyusb.git
 ```
 3. Change the "origin" remote to point at my fork
 ```
