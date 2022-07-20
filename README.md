@@ -106,10 +106,24 @@ Clone the midiusb2host project to a directory at the same level as the pico-sdk 
 cd [one directory above the pico-sdk directory]
 git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ```
+## Command Line Build (skip if you want to use Visual Studio Code)
+
+Enter this series of commands (assumes you installed the pico-sdk
+and the midid2usbhost project in the $HOME/foo directory)
+
+```
+export PICO_SDK_PATH=$HOME/foo/pico-sdk/
+cd $HOME/foo/midi2usbhost
+mkdir build
+cd build
+cmake ..
+make
+```
+The build should complete with no errors. The build output is in the build directory you created in the steps above.
 
 ## Set up and launch Visual Studio Code
 
-This series of commands 
+Enter this series of commands 
 
 ```
 cd midiusb2host
