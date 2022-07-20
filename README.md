@@ -100,7 +100,7 @@ Clone the midiusb2host project to a directory at the same level as the pico-sdk 
 
 ```
 cd [one directory above the pico-sdk directory]
-git clone --recurse-submodules https://github.com/midiusb2host.git
+git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ```
 
 ## Set up and launch Visual Studio Code
