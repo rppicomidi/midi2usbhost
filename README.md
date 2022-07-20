@@ -78,19 +78,23 @@ incorporated in the main repository for tinyusb, you will need to use my forked 
 1. If you have not already done so, follow the instructions for installing the Raspberry Pi Pico SDK in Chapter 2 of the 
 [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
 document.
-2. Create an "upstream" remote.
+2. Set the working directory to the tinyusb library
+```
+cd [some directory where you installed the pico SDK]/lib/tinyusb
+```
+3. Create an "upstream" remote.
 ```
 git remote add upstream https://github.com/hathach/tinyusb.git
 ```
-3. Change the "origin" remote to point at my fork
+4. Change the "origin" remote to point at my fork
 ```
 git remote set-url origin https://github.com/rppicomidi/tinyusb.git
 ```
-4. Get the code from my fork into your local repository
+5. Get the code from my fork into your local repository
 ```
 git fetch origin
 ```
-5. Get the midihost branch code branch
+6. Get the midihost branch code branch
 ```
 git checkout -b midihost origin/midihost
 ```
