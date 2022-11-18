@@ -74,19 +74,18 @@
 // Size of buffer to hold descriptors and other data used for enumeration
 #define CFG_TUH_ENUMERATION_BUFSIZE 256
 
-#define CFG_TUH_HUB                 1
+#define CFG_TUH_HUB                 1 // Enable USB hubs
 #define CFG_TUH_CDC                 0
 #define CFG_TUH_HID                 0 // typical keyboard + mouse device can have 3-4 HID interfaces
-#define CFG_TUH_MIDI                1 // there will be at most one MIDIStreaming Interface descriptor
+#define CFG_TUH_MIDI                1 // enable MIDI Host
 #define CFG_TUH_MSC                 0
 #define CFG_TUH_VENDOR              0
 
 // max device support (excluding hub device)
 #define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1) // hub typically has 4 ports
 
-//------------- HID -------------//
-#define CFG_TUH_HID_EPIN_BUFSIZE    64
-#define CFG_TUH_HID_EPOUT_BUFSIZE   64
+// MIDI Host string support
+#define CFG_MIDI_HOST_DEVSTRINGS 1
 
 #ifdef __cplusplus
  }
