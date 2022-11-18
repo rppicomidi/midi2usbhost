@@ -85,7 +85,7 @@ static void poll_midi_uart_rx(bool connected)
     {
         uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0,rx, nread);
         if (nwritten != nread) {
-            TU_LOG1("Warning: Dropped %d bytes receiving from UART MIDI In\r\n", nread - nwritten);
+            TU_LOG1("Warning: Dropped %lu bytes receiving from UART MIDI In\r\n", nread - nwritten);
         }
     }
 }
@@ -133,14 +133,25 @@ void tuh_midi_mount_cb(uint8_t dev_addr, uint8_t in_ep, uint8_t out_ep, uint8_t 
   printf("MIDI device address = %u, IN endpoint %u has %u cables, OUT endpoint %u has %u cables\r\n",
       dev_addr, in_ep & 0xf, num_cables_rx, out_ep & 0xf, num_cables_tx);
 
-  midi_dev_addr = dev_addr;
+  if (midi_dev_addr == 0) {
+    // then no MIDI device is currently connected
+    midi_dev_addr = dev_addr;
+  }
+  else {
+    printf("A different USB MIDI Device is already connected.\r\nOnly one device at a time is supported in this program\r\nDevice is disabled\r\n");
+  }
 }
 
 // Invoked when device with hid interface is un-mounted
 void tuh_midi_umount_cb(uint8_t dev_addr, uint8_t instance)
 {
-  midi_dev_addr = 0;
-  printf("MIDI device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  if (dev_addr == midi_dev_addr) {
+    midi_dev_addr = 0;
+    printf("MIDI device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  }
+  else {
+    printf("Unused MIDI device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  }
 }
 
 void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
@@ -154,7 +165,7 @@ void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
             uint32_t bytes_read = tuh_midi_stream_read(dev_addr, &cable_num, buffer, sizeof(buffer));
             uint8_t npushed = midi_uart_write_tx_buffer(midi_uart_instance,buffer,bytes_read);
             if (npushed != bytes_read) {
-                TU_LOG1("Warning: Dropped %d bytes sending to UART MIDI Out\r\n", bytes_read - npushed);
+                TU_LOG1("Warning: Dropped %lu bytes sending to UART MIDI Out\r\n", bytes_read - npushed);
             }
         }
     }
@@ -162,5 +173,5 @@ void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
 
 void tuh_midi_tx_cb(uint8_t dev_addr)
 {
-
+    (void)dev_addr;
 }
