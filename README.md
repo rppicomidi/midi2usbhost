@@ -35,8 +35,8 @@ If you choose to use the same hardware I did, wire the boards together as follow
 ```
 USB C Breakout board VBus pin -> Pico board VBUS Pin 40
 USB C Breakout board GND pin  -> Pico board GND Pin 38
-Pico board GND Pin 40 -> MIDI Featherwing board GND Pin 4
-Pico board VSYS Pin 38 -> MIDI Featherwing board 3.3V Pin 2
+Pico board GND Pin 8 -> MIDI Featherwing board GND Pin 4
+Pico board 3.3V Pin 36 -> MIDI Featherwing board 3.3V Pin 2
 Pico board UART1 RX Pin 6 -> MIDI Featherwing board Pin 14
 Pico board UART1 TX Pin 7 -> MIDI Featherwing board Pin 15
 ```
