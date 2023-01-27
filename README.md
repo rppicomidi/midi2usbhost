@@ -165,4 +165,32 @@ in your minicom terminal window:
 Pico MIDI Host to MIDI UART Adapter
 Configured MIDI UART 1 for 31250 baud
 ```
+# Hardware Variations
+If you are targeting a board other than the Raspberry Pi Pico that does not have UART 1
+available or does not have GPIO 4 or GPIO 5, which are the default pins for, you can
+data to CMake to properly target your hardware. There are 3 variables you can to set
+
+- `MIDI_UART_NUM` can be 0 or 1 to depending on whether you use uart0 or uart1 for MIDI. The default value is 1.
+- `MIDI_UART_TX_GPIO` is the GPIO number (not the package pin number) of the UART's transmit pin. The default is 4. If you choose a different pin, make sure that the
+UART you are using as set by `MIDI_UART_NUM` can use that pin for the UART TX function.
+- `MIDI_UART_RX_GPIO` is the GPIO number (not the package pin number) of the UART's receiver pin. The default is 5. If you choose a different pin, make sure that the
+UART you are using as set by `MIDI_UART_NUM` can use that pin for the UART RX function.
+
+You can change these values by setting them as environment variables and then running
+`cmake` or you can pass them directly on the `cmake` command line using the `-D` option.
+For example, to use UART 0 on GPIO 12 & 13 as the MIDI UART you can build your code this way:
+```
+cd build
+cmake -DMIDI_UART_NUM=0 -DMIDI_UART_TX_GPIO=12 -DDMIDI_UART_RX_GPIO=13 ..
+make
+```
+or this way:
+```
+export MIDI_UART_NUM=0
+export MIDI_UART_TX_GPIO=12
+export MIDI_UART_RX_GPIO=13
+cmake ..
+make
+```
+I find the latter method simpler when I am using the VS Code workflow to build the code.
 

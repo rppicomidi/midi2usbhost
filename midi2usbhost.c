@@ -38,9 +38,18 @@ const uint NO_LED_GPIO = 255;
 const uint LED_GPIO = 25;
 // UART selection Pin mapping. You can move these for your design if you want to
 // Make sure all these values are consistent with your choice of midi_uart
+// The default is to use UART 1, but you are free to use UART 0 if you make
+// the changes in the CMakeLists.txt file or in your environment. Note
+// that if you use UART0, then serial port debug will not be enabled
+#ifndef MIDI_UART_NUM
 #define MIDI_UART_NUM 1
-const uint MIDI_UART_TX_GPIO = 4;
-const uint MIDI_UART_RX_GPIO = 5;
+#endif
+#ifndef MIDI_UART_TX_GPIO
+#define MIDI_UART_TX_GPIO 4
+#endif
+#ifndef MIDI_UART_RX_GPIO
+#define MIDI_UART_RX_GPIO 5
+#endif
 
 static void *midi_uart_instance;
 static uint8_t midi_dev_addr = 0;
