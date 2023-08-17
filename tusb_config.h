@@ -77,15 +77,14 @@
 #define CFG_TUH_HUB                 1 // Enable USB hubs
 #define CFG_TUH_CDC                 0
 #define CFG_TUH_HID                 0 // typical keyboard + mouse device can have 3-4 HID interfaces
-#define CFG_TUH_MIDI                1 // enable MIDI Host
 #define CFG_TUH_MSC                 0
 #define CFG_TUH_VENDOR              0
 
 // max device support (excluding hub device)
 #define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1) // hub typically has 4 ports
 
-// MIDI Host string support
-#define CFG_MIDI_HOST_DEVSTRINGS 1
+// No need for MIDI Host string support
+#define CFG_MIDI_HOST_DEVSTRINGS 0
 
 #ifdef __cplusplus
  }

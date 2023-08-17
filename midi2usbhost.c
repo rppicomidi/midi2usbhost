@@ -30,9 +30,9 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "midi_uart_lib.h"
-#include "bsp/board.h"
+#include "bsp/board_api.h"
 #include "tusb.h"
-#include "class/midi/midi_host.h"
+#include "usb_midi_host.h"
 // On-board LED mapping. If no LED, set to NO_LED_GPIO
 const uint NO_LED_GPIO = 255;
 const uint LED_GPIO = 25;
@@ -73,17 +73,6 @@ static void blink_led(void)
     }
 }
 
-static void poll_usb_rx(bool connected)
-{
-    // device must be attached and have at least one endpoint ready to receive a message
-    if (!connected || tuh_midih_get_num_rx_cables(midi_dev_addr) < 1)
-    {
-        return;
-    }
-    tuh_midi_read_poll(midi_dev_addr);
-}
-
-
 static void poll_midi_uart_rx(bool connected)
 {
     uint8_t rx[48];
@@ -123,7 +112,6 @@ int main() {
         poll_midi_uart_rx(connected);
         if (connected)
             tuh_midi_stream_flush(midi_dev_addr);
-        poll_usb_rx(connected);
         midi_uart_drain_tx_buffer(midi_uart_instance);
     }
 }

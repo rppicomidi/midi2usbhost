@@ -37,8 +37,8 @@ USB C Breakout board VBus pin -> Pico board VBUS Pin 40
 USB C Breakout board GND pin  -> Pico board GND Pin 38
 Pico board GND Pin 8 -> MIDI Featherwing board GND Pin 4
 Pico board 3.3V Pin 36 -> MIDI Featherwing board 3.3V Pin 2
-Pico board UART1 RX Pin 6 -> MIDI Featherwing board Pin 14
-Pico board UART1 TX Pin 7 -> MIDI Featherwing board Pin 15
+Pico board UART1 TX Pin 6 -> MIDI Featherwing board Pin 15
+Pico board UART1 RX Pin 7 -> MIDI Featherwing board Pin 14
 ```
 
 A photo of my development setup using a second Pico board as a picoprobe is below. The Pico board
@@ -57,53 +57,44 @@ picoprobe VBUS -> Pico B VBUS
 ![*Pico USB MIDI Host Adapter with picoprobe on the right*](./docs/midiusb2host_dev.jpg)
 
 # Software Dependencies
-This project uses the the Raspberry Pi Pico SDK and it uses the tinyusb library for the USB stack. At the time
-of this writing my pull request for supporting USB MIDI host is still pending, so please use my forked tinyusb
-library until it is accepted.
-
-This project also depends on the midi\_uart\_lib and ring\_buffer\_lib projects. They are included as git
+This project depends on the usb\_midi\_host, midi\_uart\_lib, and ring\_buffer\_lib projects. They are included as git
 submodules.
+
+This project also uses the the Raspberry Pi Pico SDK and it uses the TinyUSB library for the USB stack. At the time of this writing, the version of the
+TinyUSB library that ships with the pico-sdk version 1.5.1 is not able to use
+application USB Host drivers like usb\_midi\_host.  You will need a version of TinyUSB from 15-Aug-2023 or later that calls `usbh_app_driver_get_cb()` to
+install application USB Host drivers. See below for instructions on how to
+update the TinyUSB library.
+
 # Setting Up Your Build and Debug Environment
-I am running Ubuntu Linux 20.04LTS on an old PC. I have Visual Studio Code (VS Code)
+I am running Ubuntu Linux 22.04LTS on an old PC. I have Visual Studio Code (VS Code)
 installed and went
 through the tutorial in Chapter 7 or [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf) to make sure it was working
 first. I use a picoprobe for debugging, so I have openocd running in a terminal window.
 I use minicom for the serial port terminal (make sure your linux account is in the dialup
 group).
 
-## Using the forked tinyusb library
-The Pico SDK uses the main repository for tinyusb as a git submodule. Until the USB Host driver for MIDI is
-incorporated in the main repository for tinyusb, you will need to use my forked version. This is how I do it.
+## Updating the TinyUSB library
+The Pico SDK uses the main repository for TinyUSB as a git submodule. Earlier revisions of this project
+replaced the TinyUSB library with a forked version. This is no longer necessary. You will need to check
+the version of TinyUSB you are using and update it to a more recent version if it is older than 15-Aug-2023.
 
-1. If you have not already done so, follow the instructions for installing the Raspberry Pi Pico SDK in Chapter 2 of the 
-[Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
-document.
-2. Set the working directory to the tinyusb library
+Assuming your pico-sdk is installed in `${PICO_SDK_PATH}`, then follow these steps to force your version
+of TinyUSB to the latest version. The `git remote` command is only required if you previously changed
+it per the instructions in older revisions of this project.
+
 ```
-cd [some directory where you installed the pico SDK]/lib/tinyusb
-```
-3. Create an "upstream" remote.
-```
-git remote add upstream https://github.com/hathach/tinyusb.git
-```
-4. Change the "origin" remote to point at my fork
-```
-git remote set-url origin https://github.com/rppicomidi/tinyusb.git
-```
-5. Get the code from my fork into your local repository
-```
-git fetch origin
-```
-6. Get the midihost branch code branch
-```
-git checkout -b midihost origin/midihost
+git remote set-url origin https://github.com/hathach/tinyusb.git
+cd ${PICO_SDK_PATH}/lib/tinyusb
+git checkout master
+git pull
 ```
 
 ## Get the project code
 Clone the midiusb2host project to a directory at the same level as the pico-sdk directory.
 
 ```
-cd [one directory above the pico-sdk directory]
+cd ${PICO_SDK_PATH}/..
 git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ```
 ## Command Line Build (skip if you want to use Visual Studio Code)
