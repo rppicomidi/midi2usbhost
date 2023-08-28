@@ -67,7 +67,7 @@ static void blink_led(void)
     
     int64_t diff = absolute_time_diff_us(previous_timestamp, now);
     if (diff > 1000000) {
-        gpio_put(LED_GPIO, led_state);
+        board_led_write(led_state);
         led_state = !led_state;
         previous_timestamp = now;
     }
@@ -99,8 +99,6 @@ int main() {
     tusb_init();
 
     // Map the pins to functions
-    gpio_init(LED_GPIO);
-    gpio_set_dir(LED_GPIO, GPIO_OUT);
     midi_uart_instance = midi_uart_configure(MIDI_UART_NUM, MIDI_UART_TX_GPIO, MIDI_UART_RX_GPIO);
     printf("Configured MIDI UART %u for 31250 baud\r\n", MIDI_UART_NUM);
     while (1) {
