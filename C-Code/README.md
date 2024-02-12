@@ -128,4 +128,62 @@ make
 ```
 I find the latter method simpler when I am using the VS Code workflow to build the code.
 
+# Troubleshooting
+If your project works for some USB MIDI devices and not others, one
+thing to check is the size of buffer to hold USB descriptors and other
+data used for USB enumeration. Look in the file `tusb_config.h` for
+```
+#define CFG_TUH_ENUMERATION_BUFSIZE 512
+```
+Very complex MIDI devices or USB Audio+MIDI devices like DSP guitar pedals
+or MIDI workstation keyboards may have large USB configuration descriptors.
+This project assumes 512 bytes is enough, but it may not be for your device.
 
+To check if the descriptor size is the issue, use your development computer to
+dump the USB descriptor for your device and then add up the wTotalLength field
+values for each configuration in the descriptor.
+
+
+For Linux and MacOS Homebrew, the command is lsusb -d [vid]:[pid] -v
+For Windows, it is simplest to install a program like
+[Thesycon USB Descriptor Dumper](https://www.thesycon.de/eng/usb_descriptordumper.shtml).
+
+For example, this is the important information from `lsusb -d 0944:0117 -v`
+from a Korg nanoKONTROL2:
+```
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength       0x0053
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+```
+This is the important information from the Thesycon USB Descriptor Dumper for
+a Valeton NUX MG-400
+```
+0x01	bNumConfigurations
+
+Device Qualifier Descriptor is not available. Error code: 0x0000001F
+
+
+-------------------------
+Configuration Descriptor:
+-------------------------
+0x09	bLength
+0x02	bDescriptorType
+0x0158	wTotalLength   (344 bytes)
+0x04	bNumInterfaces
+0x01	bConfigurationValue
+0x00	iConfiguration
+0xC0	bmAttributes   (Self-powered Device)
+0x00	bMaxPower      (0 mA)
+```
+You can see that if `CFG_TUH_ENUMERATION_BUFSIZE` were 256 instead of 512,
+the Korg nanoKONTROL2 would have no trouble enumerating but the Valeton
+NUX MG-400 would fail because TinyUSB couldn't load the whole configuration
+descriptor to memory.
