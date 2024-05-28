@@ -83,7 +83,7 @@ static void onDINMIDIin(const MidiInterface<HardwareSerial>::MidiMessage& mes)
 static void onMIDIconnect(uint8_t devAddr, uint8_t nInCables, uint8_t nOutCables)
 {
   if (midiDevAddr != 0) {
-    Serial1.println("Device Ignored. This program can only handle one USB MIDI device at a time.");
+    Serial1.println("Device Ignored. This program can only handle one USB MIDI device at a time.\r\n");
   }
   Serial1.printf("MIDI device at address %u has %u IN cables and %u OUT cables\r\n", devAddr, nInCables, nOutCables);
   midiDevAddr = devAddr;
@@ -105,7 +105,7 @@ static void onMIDIdisconnect(uint8_t devAddr)
 void setup() {
   // Make sure the LED is off
   digitalWrite(LED_BUILTIN, LOW); 
-
+  pinMode(LED_BUILTIN, OUTPUT);
   // Enable serial printf port
   Serial1.begin(115200);
 
@@ -123,9 +123,9 @@ void setup() {
   // Initialize USB connection management
   USBmidi.setAppOnConnect(onMIDIconnect);
   USBmidi.setAppOnDisconnect(onMIDIdisconnect);
-
-  delay(2000);
-  Serial1.println("EZ_MIDI2USB_HOST");
+  while(!Serial1) {}
+  delay(1000);
+  Serial1.println("EZ_MIDI2USB_HOST to Serial MIDI\r\n");
 }
 
 // Program main loop is here
