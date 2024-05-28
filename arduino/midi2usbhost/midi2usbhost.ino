@@ -46,18 +46,25 @@ USING_NAMESPACE_EZ_USB_MIDI_HOST
 USING_NAMESPACE_MIDI
 
 // Create the Hardware Serial object DINmidi with the default baud rate but the same interface settings as the USB host port
+struct MidiHostSettings : public MidiHostSettingsDefault {
+  // If you need to change the settings for either the USB host or serial port, do it
+  // in this structure. For example, to change the maximum SysEx message payload size to 256
+  //  static const unsigned SysExMaxSize = 256;
+  //  static const unsigned MidiRxBufsize = RPPICOMIDI_EZ_USB_MIDI_HOST_GET_BUFSIZE(SysExMaxSize);
+  //  static const unsigned MidiTxBufsize = RPPICOMIDI_EZ_USB_MIDI_HOST_GET_BUFSIZE(SysExMaxSize);
+};
 SerialMIDI<HardwareSerial, DefaultSerialSettings> serialDINmidi(Serial2);
 MidiInterface<SerialMIDI<HardwareSerial, DefaultSerialSettings>, MidiHostSettings> DINmidi((SerialMIDI<HardwareSerial, DefaultSerialSettings>&)serialDINmidi);
 
 // Create the USB MIDI Host Driver Object
-static EZ_USB_MIDI_HOST USBmidi;
+RPPICOMIDI_EZ_USB_MIDI_HOST_INSTANCE(USBmidi, MidiHostSettings)
 
 static uint8_t midiDevAddr = 0;
 
 // DEFINE MESSAGE ROUTING
 // Note that the MidiMessage data type from one MidiInterface type
 // is not the same as the MidiMessage data type from another one
-static void onUSBMIDIin(const MidiInterface<EZ_USB_MIDI_HOST_Transport>::MidiMessage& mes)
+static void onUSBMIDIin(const MidiInterface<EZ_USB_MIDI_HOST_Transport<MidiHostSettings>>::MidiMessage& mes)
 {
   //printf("usb:%02x %02x %02x %02x\r\n", mes.type, mes.data1, mes.data2, mes.channel);
   DINmidi.send(mes.type, mes.data1, mes.data2, mes.channel);
