@@ -47,7 +47,7 @@ and the midid2usbhost project in the $HOME/foo directory)
 
 ```
 export PICO_SDK_PATH=$HOME/foo/pico-sdk/
-cd $HOME/foo/midi2usbhost
+cd $HOME/foo/midi2usbhost/C-Code
 mkdir build
 cd build
 cmake ..
@@ -60,7 +60,7 @@ The build should complete with no errors. The build output is in the build direc
 Enter this series of commands 
 
 ```
-cd midiusb2host
+cd midiusb2host/C-Code
 mkdir build
 cd build
 touch compile_commands.json
@@ -82,12 +82,12 @@ code
 ```
 
 ## Load the project
-The first time you run the project, in VS Code, File->Open Folder... and select the midiusb2host folder. Click OK.
+The first time you run the project, in VS Code, `File->Open Folder...` and select the `midiusb2host/C-Code` folder. Click OK.
 
 You will be prompted to set up the Kit. Choose GCC for arm-none-eabi [your version]
 
 ## Run the code
-In VS Code, select Run->Start Debugging from the file menu. The first time, you will be
+In VS Code, select `Run->Start Debugging` from the `Run` menu. The first time, you will be
 prompted to select the launch target. Select midi2usbhost.
 
 VS Code debugger will load the code to your target Pico board and halt at main(). Press
