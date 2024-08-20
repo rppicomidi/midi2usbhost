@@ -20,7 +20,7 @@ If you have never used Arduino to build software for the RP2040 chip,
 you can find a good tutorial [here](https://learn.adafruit.com/adafruit-feather-rp2040-with-usb-type-a-host/arduino-ide-setup).
 You should make sure your Board Manager has installed
 verion 3.6.3 or later of the
-[Earle Philhower Support Package](https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json).
+[Earle Philhower Arduino Core](https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json).
 
 Once you are able to build and run a simple blink example, please use
 the Arduino IDE Library Manager to install the
