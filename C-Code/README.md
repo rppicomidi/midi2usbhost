@@ -1,40 +1,27 @@
 # midi2usbhost C Code Software
-This project depends on the usb\_midi\_host, midi\_uart\_lib, and ring\_buffer\_lib projects. They are included as git
-submodules.
+This project is easiest to build with version 2.0 or later of the `pico-sdk`
+with the included git submodule for the TinyUSB statck. This project relies
+on [usb_midi_host](https://github.com/rppicomidi/usb_midi_host)
+library to provide TinyUSB with a driver for the USB MIDI Host and the
+[midi_uart_lib](https://github.com/rppicomidi/midi_uart_lib) and
+[ring_buffer_lib](https://github.com/rppicomidi/ring_buffer_lib) libraries
+to implement the DIN MIDI. These libraries are also git submodules.
 
-This project also uses the the Raspberry Pi Pico SDK and it uses the TinyUSB
-library for the USB stack. At the time of this writing, the version of the
-TinyUSB library that ships with the pico-sdk version 1.5.1 is not able to use
-application USB Host drivers like usb\_midi\_host.  You will need a version of
-TinyUSB from 15-Aug-2023 or later that calls `usbh_app_driver_get_cb()` to
-install application USB Host drivers. See below for instructions on how to
-update the TinyUSB library.
-
-## Setting Up Your Build and Debug Environment
-I am running Ubuntu Linux 22.04LTS on an old PC. I have Visual Studio Code (VS Code)
-installed and went through the tutorial in Chapter 7 of [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
-to make sure it was working first. I use a picoprobe for debugging, so I have openocd running in a terminal window.
-I use minicom for the serial port terminal (make sure your linux account is in the dialup
-group).
-
-## Updating the TinyUSB library
-The Pico SDK uses the main repository for TinyUSB as a git submodule. Earlier revisions of this project
-replaced the TinyUSB library with a forked version. This is no longer necessary. You will need to check
-the version of TinyUSB you are using and update it to a more recent version if it is older than 15-Aug-2023.
-
-Assuming your pico-sdk is installed in `${PICO_SDK_PATH}`, then follow these steps to force your version
-of TinyUSB to the latest version. The `git remote` command is only required if you previously changed
-it per the instructions in older revisions of this project.
-
-```
-git remote set-url origin https://github.com/hathach/tinyusb.git
-cd ${PICO_SDK_PATH}/lib/tinyusb
-git checkout master
-git pull
-```
+## First step, build the `usb_midi_host_example` program
+This program is only slightly different from the [usb_midi_host_example project](https://github.com/rppicomidi/usb_midi_host/tree/main/examples/C-code/usb_midi_host_example).
+That program will run on the same hardware that this project uses. Please make
+sure you can successfully build and run the `usb_midi_host_example` program
+before building this project. The `usb_midi_host` project's
+[README file](https://github.com/rppicomidi/usb_midi_host/blob/main/README.md)
+has extensive instructions for setting up the build environment for various
+versions of the `pico-sdk`.
 
 ## Get the project code
-Clone the midiusb2host project to a directory at the same level as the pico-sdk directory.
+Clone the midiusb2host project to a directory; if you manually installed the
+`pico-sdk` per Appendix C of [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf),
+it is best to clone to a directory at the same level as the `pico-sdk` directory.
+If you are using version 2.0 of the `pico-sdk` installed from the Raspbery Pi Pico VS Code plugin, and you are building with VS Code, then where you clone the project files
+is less important.
 
 ```
 cd ${PICO_SDK_PATH}/..
@@ -42,58 +29,36 @@ git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ```
 ## Command Line Build (skip if you want to use Visual Studio Code)
 
-Enter this series of commands (assumes you installed the pico-sdk
-and the midid2usbhost project in the $HOME/foo directory)
+Enter this series of commands (assumes you installed the `pico-sdk`
+and the `midid2usbhost` project in the `${HOME}/foo` directory)
 
 ```
-export PICO_SDK_PATH=$HOME/foo/pico-sdk/
-cd $HOME/foo/midi2usbhost/C-Code
+export PICO_SDK_PATH=${HOME}/foo/pico-sdk/
+cd ${HOME}/foo/midi2usbhost/C-Code
 mkdir build
 cd build
 cmake ..
 make
 ```
-The build should complete with no errors. The build output is in the build directory you created in the steps above.
+If you were able to build `usb_midi_host_example` program, then this should work too.
+The build should complete with no errors. The build output is in the `build` directory you created in the steps above.
 
 ## Set up and launch Visual Studio Code
-
-Enter this series of commands 
-
-```
-cd midiusb2host/C-Code
-mkdir build
-cd build
-touch compile_commands.json
-```
-
-Run these once in a terminal before you launch VS Code. The first sets up the environment
-and the second launches openOCD for use with the picoprobe
-
-```
-export PICO_SDK_PATH=$HOME/projects/pico/pico-sdk/
-gnome-terminal -- openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040.cfg -s tcl
-gnome-terminal -- minicom -D /dev/ttyACM0 -b 115200
-```
-
-Finally, launch VS Code
-
-```
-code
-```
-
-## Load the project
-The first time you run the project, in VS Code, `File->Open Folder...` and select the `midiusb2host/C-Code` folder. Click OK.
-
-You will be prompted to set up the Kit. Choose GCC for arm-none-eabi [your version]
+Follow steps similar to those for opening and building the `usb_midi_host_example`
+project.
 
 ## Run the code
-In VS Code, select `Run->Start Debugging` from the `Run` menu. The first time, you will be
-prompted to select the launch target. Select midi2usbhost.
+You can load the program via the board's USB device port by loading
+the `midi2usbhost.uf2` file found
+in the build directory. You can load the program via the board's SWD port
+by using a picoprobe or something similar
+to load the `midi2usbhost.elf` file to the board using VS Code,
+or by using openocd command
+line tools.
 
-VS Code debugger will load the code to your target Pico board and halt at main(). Press
-the triangular run icon to start it running. If all goes well, you should see the LED
+Once the program is loaded, if all goes well, you should see the LED
 on your Pico board blinking off and on once per second and your should see the following
-in your minicom terminal window:
+in your terminal window:
 
 ```
 Pico MIDI Host to MIDI UART Adapter
@@ -102,7 +67,7 @@ Configured MIDI UART 1 for 31250 baud
 # Hardware Variations
 If you are targeting a board other than the Raspberry Pi Pico that does not have UART 1
 available or does not have GPIO 4 or GPIO 5, which are the default pins for, you can
-data to CMake to properly target your hardware. There are 3 variables you can to set
+send data to CMake to properly target your hardware. There are 3 variables you can to set
 
 - `MIDI_UART_NUM` can be 0 or 1 to depending on whether you use uart0 or uart1 for MIDI. The default value is 1.
 - `MIDI_UART_TX_GPIO` is the GPIO number (not the package pin number) of the UART's transmit pin. The default is 4. If you choose a different pin, make sure that the
@@ -129,6 +94,17 @@ make
 I find the latter method simpler when I am using the VS Code workflow to build the code.
 
 # Troubleshooting
+Please see [this section](https://github.com/rppicomidi/usb_midi_host/blob/main/README.md#troubleshooting-configuration-and-design-details)
+of the `usb_midi_host` project's `README.md` file for more
+troublshooting hints.
+
+If you are have trouble with an Arturia
+Beatstep Pro, see [this bug](https://github.com/rppicomidi/usb_midi_host/issues/14).
+The issue caused by a bug in the RP2040 native USB hardware. A robust
+workaround requires rewrite of the TinyUSB host controller driver for
+the RP2040 chip. The bug has a hack/patch you try around comment #39 that will
+fix the worse issue for this class of bug.
+
 If your project works for some USB MIDI devices and not others, one
 thing to check is the size of buffer to hold USB descriptors and other
 data used for USB enumeration. Look in the file `tusb_config.h` for
