@@ -15,13 +15,17 @@ combinations described here would almost certainly fail electrical and RF
 compliance testing. Use at your own risk.
 
 # Software
-You may build one of two different programs in this project to bridge USB
+You may build one of three different programs in this project to bridge USB
 Host MIDI to serial port MIDI depending on whether you prefer to work with
 C Code or with an Arduino Sketch. Either program will run on the same
 hardware. If you want to build and run the C Code, follow the instructions
 in the [README.md](C-Code/README.md) file in the `C-Code` directory. If you want to build and
 run the Arduino sketch, follow the instructions in the [README.md](arduino/midi2usbhost/README.md) file in
-the `arduino` directory.
+the `arduino` directory. In an attempt to address issue #15 for people
+who just want to wire two boards together to make something work, you can now run an
+Arduino Sketch that uses the [Adafruit RP2040 Feather with USB Type A Host](https://learn.adafruit.com/adafruit-feather-rp2040-with-usb-type-a-host).
+Follow the instructions in the [README.md](arduino/midi2piousbhost/README.md) file
+in the `arduino` directory.
 
 # Hardware Dependencies
 This project is designed to run on the RP2040 chip. It is tested on a 
