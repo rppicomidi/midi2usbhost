@@ -37,21 +37,23 @@ export PICO_SDK_PATH=${HOME}/foo/pico-sdk/
 cd ${HOME}/foo/midi2usbhost/C-Code
 mkdir build
 cd build
-cmake ..
+cmake -DPICO_BOARD=pico ..
 make
 ```
 If you were able to build `usb_midi_host_example` program, then this should work too.
 The build should complete with no errors. The build output is in the `build` directory you created in the steps above.
+Note that if your board is not a Raspberry Pi Pico, you should substitute your
+board name for `pico` in the line `cmake -DPICO_BOARD=pico ..`
 
 ## Set up and launch Visual Studio Code
 Follow steps similar to those for opening and building the `usb_midi_host_example`
-project.
+project. Be sure to select the board type so your project builds and runs correctly.
 
 ## Run the code
 You can load the program via the board's USB device port by loading
 the `midi2usbhost.uf2` file found
 in the build directory. You can load the program via the board's SWD port
-by using a picoprobe or something similar
+by using a Debugprobe (formally called a picoprobe) or something similar
 to load the `midi2usbhost.elf` file to the board using VS Code,
 or by using openocd command
 line tools.
@@ -92,6 +94,10 @@ cmake ..
 make
 ```
 I find the latter method simpler when I am using the VS Code workflow to build the code.
+
+Note that if your board does not control and on-board LED by toggling a GPIO pin,
+the this program will not control the on-board LED. The Pico W board is an example
+of a board with this limitation.
 
 # Troubleshooting
 Please see [this section](https://github.com/rppicomidi/usb_midi_host/blob/main/README.md#troubleshooting-configuration-and-design-details)

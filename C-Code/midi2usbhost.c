@@ -33,9 +33,7 @@
 #include "bsp/board_api.h"
 #include "tusb.h"
 #include "usb_midi_host.h"
-// On-board LED mapping. If no LED, set to NO_LED_GPIO
-const uint NO_LED_GPIO = 255;
-const uint LED_GPIO = 25;
+
 // UART selection Pin mapping. You can move these for your design if you want to
 // Make sure all these values are consistent with your choice of midi_uart
 // The default is to use UART 1, but you are free to use UART 0 if you make
@@ -60,9 +58,6 @@ static void blink_led(void)
 
     static bool led_state = false;
 
-    // This design has no on-board LED
-    if (NO_LED_GPIO == LED_GPIO)
-        return;
     absolute_time_t now = get_absolute_time();
     
     int64_t diff = absolute_time_diff_us(previous_timestamp, now);
@@ -91,7 +86,6 @@ static void poll_midi_uart_rx(bool connected)
 int main() {
 
     bi_decl(bi_program_description("Provide a USB host interface for Serial Port MIDI."));
-    bi_decl(bi_1pin_with_name(LED_GPIO, "On-board LED"));
     bi_decl(bi_2pins_with_names(MIDI_UART_TX_GPIO, "MIDI UART TX", MIDI_UART_RX_GPIO, "MIDI UART RX"));
 
     board_init();
