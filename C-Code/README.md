@@ -1,27 +1,46 @@
 # midi2usbhost C Code Software
-This project is easiest to build with version 2.0 or later of the `pico-sdk`
-with the included git submodule for the TinyUSB statck. This project relies
-on [usb_midi_host](https://github.com/rppicomidi/usb_midi_host)
-library to provide TinyUSB with a driver for the USB MIDI Host and the
-[midi_uart_lib](https://github.com/rppicomidi/midi_uart_lib) and
+This project is easiest to build with version 2.1.1 or later of the `pico-sdk`.
+This project relies on the [midi_uart_lib](https://github.com/rppicomidi/midi_uart_lib) and the
 [ring_buffer_lib](https://github.com/rppicomidi/ring_buffer_lib) libraries
-to implement the DIN MIDI. These libraries are also git submodules.
+to implement the DIN MIDI.
+These libraries are git submodules. The USB MIDI Host library is now
+native to TinyUSB and is no longer a git submodule of this project.
 
-## First step, build the `usb_midi_host_example` program
-This program is only slightly different from the [usb_midi_host_example project](https://github.com/rppicomidi/usb_midi_host/tree/main/examples/C-code/usb_midi_host_example).
-That program will run on the same hardware that this project uses. Please make
-sure you can successfully build and run the `usb_midi_host_example` program
-before building this project. The `usb_midi_host` project's
-[README file](https://github.com/rppicomidi/usb_midi_host/blob/main/README.md)
-has extensive instructions for setting up the build environment for various
-versions of the `pico-sdk`.
+# What is the most recent major change?
+This project no longer depends on the the [usb_midi_host](https://github.com/rppicomidi/usb_midi_host)
+project. When the TinyUSB project merged the USB MIDI Host pull request,
+most of the API changed. The most significant change is that
+the the TinyUSB MIDI Host API uses a device index instead of the USB device address
+to reference MIDI devices. Also, the TinyUSB MIDI Host API changed some function names
+and removed the device string functionality.
+
+## Set up your build environment
+Sections 2 and 3 of the [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
+describes how to set up your build environment for working using Microsoft
+Visual Studio Code. Appendix C of the same document describes how to set
+up the build environment manually for command line use. Please choose
+a workflow you are comfortable with.
+
+## Update TinyUSB
+As of this writing, the latest version of the pico-sdk (version 2.1.1) does not
+ship with a version of TinyUSB that supports USB MIDI Host. You will need
+to update TinyUSB to build this code. If you are using VS Code and installed
+the pico-sdk per sections 2 and 3 of the [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf),
+you will find TinyUSB installed in `${HOME}/.pico-sdk/sdk/2.1.1/lib/tinyusb`.
+If you installed the pico-sdk per Appendix C of the same document, then
+you will find TinyUSB installed in `${HOME}/pico/pico-sdk/lib/tinyusb`.
+
+```
+cd [the directory where TinyUSB is installed]
+git checkout master
+git pull
+```
 
 ## Get the project code
 Clone the midiusb2host project to a directory; if you manually installed the
 `pico-sdk` per Appendix C of [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf),
 it is best to clone to a directory at the same level as the `pico-sdk` directory.
-If you are using version 2.0 of the `pico-sdk` installed from the Raspbery Pi Pico VS Code plugin, and you are building with VS Code, then where you clone the project files
-is less important.
+If you are using version 2.1.1 of the `pico-sdk` installed from the Raspbery Pi Pico VS Code plugin, and you are building with VS Code, then where you clone the project files is less important.
 
 ```
 cd ${PICO_SDK_PATH}/..
@@ -30,24 +49,26 @@ git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ## Command Line Build (skip if you want to use Visual Studio Code)
 
 Enter this series of commands (assumes you installed the `pico-sdk`
-and the `midid2usbhost` project in the `${HOME}/foo` directory)
+and the `midid2usbhost` project in the `${HOME}/pico` directory)
 
 ```
-export PICO_SDK_PATH=${HOME}/foo/pico-sdk/
-cd ${HOME}/foo/midi2usbhost/C-Code
+export PICO_SDK_PATH=${HOME}/pico/pico-sdk/
+cd ${HOME}/pico/midi2usbhost/C-Code
 mkdir build
 cd build
 cmake -DPICO_BOARD=pico ..
 make
 ```
-If you were able to build `usb_midi_host_example` program, then this should work too.
 The build should complete with no errors. The build output is in the `build` directory you created in the steps above.
 Note that if your board is not a Raspberry Pi Pico, you should substitute your
 board name for `pico` in the line `cmake -DPICO_BOARD=pico ..`
 
-## Set up and launch Visual Studio Code
-Follow steps similar to those for opening and building the `usb_midi_host_example`
-project. Be sure to select the board type so your project builds and runs correctly.
+## Visual Studio Code Build
+Run VS Code and import this project. It should import cleanly.
+Build the code using the Raspberry Pi Pico plugin controls.
+As long as the Pico SDK version is 2.1.1 or later and you
+have updated the TinyUSB version as described above, the
+program should build with no errors.
 
 ## Run the code
 You can load the program via the board's USB device port by loading
@@ -100,16 +121,19 @@ the this program will not control the on-board LED. The Pico W board is an examp
 of a board with this limitation.
 
 # Troubleshooting
+Prior to TinyUSB adding native support for USB MIDI Host, this project
+used the [usb_midi_host](https://github.com/rppicomidi/usb_midi_host) project
+to provide the USB MIDI Host driver support. That project's README file
+contained a lot of troubleshooting information for USB MIDI hosts.
 Please see [this section](https://github.com/rppicomidi/usb_midi_host/blob/main/README.md#troubleshooting-configuration-and-design-details)
 of the `usb_midi_host` project's `README.md` file for more
 troublshooting hints.
 
 If you are have trouble with an Arturia
 Beatstep Pro, see [this bug](https://github.com/rppicomidi/usb_midi_host/issues/14).
-The issue caused by a bug in the RP2040 native USB hardware. A robust
-workaround requires rewrite of the TinyUSB host controller driver for
-the RP2040 chip. The bug has a hack/patch you try around comment #39 that will
-fix the worse issue for this class of bug.
+The issue caused by a bug in the RP2040 native USB hardware. There is
+a [pending pull request](https://github.com/hathach/tinyusb/pull/2814) in TinyUSB to resolve this issue.
+Feel free to try this pull request.
 
 If your project works for some USB MIDI devices and not others, one
 thing to check is the size of buffer to hold USB descriptors and other
@@ -141,12 +165,13 @@ from a Korg nanoKONTROL2:
     bNumInterfaces          1
     bConfigurationValue     1
     iConfiguration          0 
-    bmAttributes         0x80
-      (Bus Powered)
-    MaxPower              100mA
+    bmAttributes         0x80     (Bus Powered)
 ```
-This is the important information from the Thesycon USB Descriptor Dumper for
+
+Follow steps similar to those for opening and building the `usb_midi_host_example`
+project. Be sure to select the board type so your project builds and runs correctly.on from the Thesycon USB Descriptor Dumper for
 a Valeton NUX MG-400
+
 ```
 0x01	bNumConfigurations
 

@@ -32,7 +32,6 @@
 #include "midi_uart_lib.h"
 #include "bsp/board_api.h"
 #include "tusb.h"
-#include "usb_midi_host.h"
 
 // UART selection Pin mapping. You can move these for your design if you want to
 // Make sure all these values are consistent with your choice of midi_uart
@@ -50,7 +49,8 @@
 #endif
 
 static void *midi_uart_instance;
-static uint8_t midi_dev_addr = 0;
+static uint8_t dev_idx = TUSB_INDEX_INVALID_8;
+static bool update_strings = false;
 
 static void blink_led(void)
 {
@@ -74,13 +74,25 @@ static void poll_midi_uart_rx(bool connected)
     // Pull any bytes received on the MIDI UART out of the receive buffer and
     // send them out via USB MIDI on virtual cable 0
     uint8_t nread = midi_uart_poll_rx_buffer(midi_uart_instance, rx, sizeof(rx));
-    if (nread > 0 && connected && tuh_midih_get_num_tx_cables(midi_dev_addr) >= 1)
+    if (nread > 0 && connected && tuh_midi_get_rx_cable_count(dev_idx) >= 1)
     {
-        uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0,rx, nread);
+        uint32_t nwritten = tuh_midi_stream_write(dev_idx, 0,rx, nread);
         if (nwritten != nread) {
             TU_LOG1("Warning: Dropped %lu bytes receiving from UART MIDI In\r\n", nread - nwritten);
         }
     }
+}
+
+// This routine converts only a limited set of UTF-16LE to UTF-8
+// It is good enough for US English USB string descriptors
+// If you need something better, please file an issue in this project.
+static void print_string_descriptor(uint16_t *buffer)
+{
+    uint8_t len = ((*buffer) & 0xFF)/2;
+    for (uint8_t idx = 1; idx < len; idx++) {
+        printf("%c", buffer[idx]);
+    }
+    printf("\r\n");
 }
 
 int main() {
@@ -99,60 +111,79 @@ int main() {
         tuh_task();
 
         blink_led();
-        bool connected = midi_dev_addr != 0 && tuh_midi_configured(midi_dev_addr);
+        bool connected = dev_idx != TUSB_INDEX_INVALID_8 && tuh_midi_mounted(dev_idx);
 
         poll_midi_uart_rx(connected);
         if (connected)
-            tuh_midi_stream_flush(midi_dev_addr);
+            tuh_midi_write_flush(dev_idx);
         midi_uart_drain_tx_buffer(midi_uart_instance);
+        if (connected && update_strings) {
+            uint16_t buffer[128];
+            update_strings = false;
+            tuh_itf_info_t info;
+            if (!tuh_midi_itf_get_info(dev_idx, &info))
+                panic("tuh_midi_itf_get_info failed\r\n");
+            if (tuh_descriptor_get_string_langid_sync(info.daddr, buffer, sizeof(buffer)) == XFER_RESULT_SUCCESS) {
+                uint16_t langid = buffer[1];
+                if (tuh_descriptor_get_manufacturer_string_sync(info.daddr, langid, buffer, sizeof(buffer))== XFER_RESULT_SUCCESS) {
+                    printf("manufacturer: ");
+                    print_string_descriptor(buffer);
+                }
+                if (tuh_descriptor_get_product_string_sync(info.daddr, langid, buffer, sizeof(buffer))== XFER_RESULT_SUCCESS) {
+                    printf("product: ");
+                    print_string_descriptor(buffer);
+                }
+                if (tuh_descriptor_get_serial_string_sync(info.daddr, langid, buffer, sizeof(buffer))== XFER_RESULT_SUCCESS) {
+                    printf("serial: ");
+                    print_string_descriptor(buffer);
+                }
+            }
+            
+        }
     }
 }
 
 //--------------------------------------------------------------------+
 // TinyUSB Callbacks
 //--------------------------------------------------------------------+
-
-// Invoked when device with hid interface is mounted
-// Report descriptor is also available for use. tuh_hid_parse_report_descriptor()
-// can be used to parse common/simple enough descriptor.
-// Note: if report descriptor length > CFG_TUH_ENUMERATION_BUFSIZE, it will be skipped
-// therefore report_desc = NULL, desc_len = 0
-void tuh_midi_mount_cb(uint8_t dev_addr, uint8_t in_ep, uint8_t out_ep, uint8_t num_cables_rx, uint16_t num_cables_tx)
+// Invoked when device with MIDI interface is mounted
+void tuh_midi_mount_cb(uint8_t idx, const tuh_midi_mount_cb_t* mount_cb_data)
 {
-  printf("MIDI device address = %u, IN endpoint %u has %u cables, OUT endpoint %u has %u cables\r\n",
-      dev_addr, in_ep & 0xf, num_cables_rx, out_ep & 0xf, num_cables_tx);
+  printf("MIDI Device Index = %u, MIDI device address = %u, %u IN cables, OUT %u cables\r\n", idx,
+      mount_cb_data->daddr, mount_cb_data->rx_cable_count, mount_cb_data->tx_cable_count);
 
-  if (midi_dev_addr == 0) {
+  if (dev_idx == TUSB_INDEX_INVALID_8) {
     // then no MIDI device is currently connected
-    midi_dev_addr = dev_addr;
+    dev_idx = idx;
   }
   else {
     printf("A different USB MIDI Device is already connected.\r\nOnly one device at a time is supported in this program\r\nDevice is disabled\r\n");
   }
+  update_strings = true;
 }
 
-// Invoked when device with hid interface is un-mounted
-void tuh_midi_umount_cb(uint8_t dev_addr, uint8_t instance)
+// Invoked when device with MIDI interface is un-mounted
+void tuh_midi_umount_cb(uint8_t idx)
 {
-  if (dev_addr == midi_dev_addr) {
-    midi_dev_addr = 0;
-    printf("MIDI device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  if (idx == dev_idx) {
+    dev_idx = TUSB_INDEX_INVALID_8;
+    printf("MIDI Device Index = %u is unmounted\r\n", idx);
   }
   else {
-    printf("Unused MIDI device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+    printf("Unused MIDI Device Index  %u is unmounted\r\n", idx);
   }
 }
 
-void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
+void tuh_midi_rx_cb(uint8_t idx, uint32_t num_bytes)
 {
-    if (midi_dev_addr == dev_addr)
+    if (dev_idx == idx)
     {
-        if (num_packets != 0)
+        if (num_bytes != 0)
         {
             uint8_t cable_num;
             uint8_t buffer[48];
             while (1) {
-                uint32_t bytes_read = tuh_midi_stream_read(dev_addr, &cable_num, buffer, sizeof(buffer));
+                uint32_t bytes_read = tuh_midi_stream_read(idx, &cable_num, buffer, sizeof(buffer));
                 if (bytes_read == 0)
                     return;
                 if (cable_num == 0) {
@@ -166,7 +197,8 @@ void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
     }
 }
 
-void tuh_midi_tx_cb(uint8_t dev_addr)
+void tuh_midi_tx_cb(uint8_t idx, uint32_t num_bytes)
 {
-    (void)dev_addr;
+    (void)idx;
+    (void)num_bytes;
 }

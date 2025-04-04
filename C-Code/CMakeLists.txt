@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/midi_uart_lib)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/usb_midi_host)
 
 add_executable(midi2usbhost
     midi2usbhost.c
@@ -49,7 +48,7 @@ target_include_directories(midi2usbhost PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 target_link_options(midi2usbhost PRIVATE -Xlinker --print-memory-usage)
 target_compile_options(midi2usbhost PRIVATE -Wall -Wextra)
-target_link_libraries(midi2usbhost midi_uart_lib tinyusb_host tinyusb_board ring_buffer_lib pico_stdlib usb_midi_host_app_driver)
+target_link_libraries(midi2usbhost midi_uart_lib tinyusb_host tinyusb_board ring_buffer_lib pico_stdlib)
 
 pico_add_extra_outputs(midi2usbhost)
 
