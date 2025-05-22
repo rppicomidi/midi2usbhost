@@ -38,17 +38,38 @@
 #ifndef CFG_TUSB_MCU
   #error CFG_TUSB_MCU must be defined
 #endif
-
+// RHPort max operational speed can defined by board.mk
+#ifndef BOARD_TUH_MAX_SPEED
+#define BOARD_TUH_MAX_SPEED   OPT_MODE_DEFAULT_SPEED
+#endif
+#ifdef RPPICOMIDI_ADAFRUIT_FEATHER_RP2040_USB_HOST
+#define BOARD_TUD_RHPORT      0
+#define RPPICOMIDI_CFG_TUSB_RHPORT0_MODE OPT_MODE_DEVICE
+// Use pico-pio-usb as host controller for raspberry rp2040
+#define BOARD_TUH_RHPORT 1
+#define CFG_TUSB_RHPORT1_MODE OPT_MODE_HOST
+#define CFG_TUH_RPI_PIO_USB   1
+// Fix mismatch between pico-sdk and TinyUSB build system; BOARD=pico-sdk breaks this
+#ifndef PICO_DEFAULT_PIO_USB_DP_PIN
+#define PICO_DEFAULT_PIO_USB_DP_PIN       16
+#endif
+#ifndef PICO_DEFAULT_PIO_USB_VBUSEN_PIN
+#define PICO_DEFAULT_PIO_USB_VBUSEN_PIN   18
+#endif
+#ifndef PICO_DEFAULT_PIO_USB_VBUSEN_STATE
+#define PICO_DEFAULT_PIO_USB_VBUSEN_STATE 1
+#endif
+#else
 #if CFG_TUSB_MCU == OPT_MCU_LPC43XX || CFG_TUSB_MCU == OPT_MCU_LPC18XX || CFG_TUSB_MCU == OPT_MCU_MIMXRT10XX
   #define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_HOST | OPT_MODE_HIGH_SPEED)
 #else
   #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_HOST
 #endif
+#endif
 
 #ifndef CFG_TUSB_OS
 #define CFG_TUSB_OS                 OPT_OS_NONE
 #endif
-
 // CFG_TUSB_DEBUG is defined by compiler in DEBUG build
 // #define CFG_TUSB_DEBUG           0
 
@@ -70,6 +91,9 @@
 //--------------------------------------------------------------------
 // CONFIGURATION
 //--------------------------------------------------------------------
+// Enable Host stack, Default is max speed that hardware controller could support with on-chip PHY
+#define CFG_TUH_ENABLED       1
+#define CFG_TUH_MAX_SPEED     BOARD_TUH_MAX_SPEED
 
 // Size of buffer to hold descriptors and other data used for enumeration
 // See README.md Troubleshooting section for more details
@@ -84,8 +108,6 @@
 // max device support (excluding hub device)
 #define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1) // hub typically has 4 ports
 #define CFG_TUH_MIDI                (CFG_TUH_DEVICE_MAX)
-// No need for MIDI Host string support
-#define CFG_MIDI_HOST_DEVSTRINGS 0
 
 #ifdef __cplusplus
  }

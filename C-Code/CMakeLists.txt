@@ -49,6 +49,12 @@ target_include_directories(midi2usbhost PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 target_link_options(midi2usbhost PRIVATE -Xlinker --print-memory-usage)
 target_compile_options(midi2usbhost PRIVATE -Wall -Wextra)
 target_link_libraries(midi2usbhost midi_uart_lib tinyusb_host tinyusb_board ring_buffer_lib pico_stdlib)
-
+if(DEFINED PICO_BOARD)
+if(${PICO_BOARD} MATCHES "adafruit_feather_rp2040_usb_host")
+message("Adding Pico PIO USB library for Adafruit Feather RP2040 USB Host board")
+target_compile_definitions(midi2usbhost PRIVATE RPPICOMIDI_ADAFRUIT_FEATHER_RP2040_USB_HOST)
+target_link_libraries(midi2usbhost tinyusb_pico_pio_usb)
+endif()
+endif()
 pico_add_extra_outputs(midi2usbhost)
 

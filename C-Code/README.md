@@ -14,6 +14,9 @@ the the TinyUSB MIDI Host API uses a device index instead of the USB device addr
 to reference MIDI devices. Also, the TinyUSB MIDI Host API changed some function names
 and removed the device string functionality.
 
+As an additional feature, this project now supports the Adafruit Feather RP2040
+with USB A host board.
+
 ## Set up your build environment
 Sections 2 and 3 of the [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
 describes how to set up your build environment for working using Microsoft
@@ -35,6 +38,7 @@ cd [the directory where TinyUSB is installed]
 git checkout master
 git pull
 ```
+As of this writing, these steps will get you TinyUSB commit d3a9fee5cbd2490fa3d1e3976169e0c40e5a5e0c.
 
 ## Get the project code
 Clone the midiusb2host project to a directory; if you manually installed the
@@ -50,8 +54,10 @@ git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 
 Enter this series of commands (assumes you installed the `pico-sdk`
 and the `midid2usbhost` project in the `${HOME}/pico` directory)
-
+and your board will be defined in `${MYBOARD}`. See the Hardware Variations
+section for more information.
 ```
+export PICO_BOARD=${MYBOARD}
 export PICO_SDK_PATH=${HOME}/pico/pico-sdk/
 cd ${HOME}/pico/midi2usbhost/C-Code
 mkdir build
@@ -88,6 +94,12 @@ Pico MIDI Host to MIDI UART Adapter
 Configured MIDI UART 1 for 31250 baud
 ```
 # Hardware Variations
+The values you can substitute for `${MYBOARD}` include all of the boards that
+are supported in the `${PICO_SDK_PATH}/src/boards/include/boards` directory.
+As of this writing, only the Adafruit Feather RP2040 with USB A Host board
+supports using the Pico PIO USB library and 2 GPIO pins for the USB MIDI host.
+All other boards support using the built-in USB port for the USB Host port.
+
 If you are targeting a board other than the Raspberry Pi Pico that does not have UART 1
 available or does not have GPIO 4 or GPIO 5, which are the default pins for, you can
 send data to CMake to properly target your hardware. There are 3 variables you can to set

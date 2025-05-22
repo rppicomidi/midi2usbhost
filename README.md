@@ -25,7 +25,13 @@ the `arduino` directory. In an attempt to address issue #15 for people
 who just want to wire two boards together to make something work, you can now run an
 Arduino Sketch that uses the [Adafruit RP2040 Feather with USB Type A Host](https://learn.adafruit.com/adafruit-feather-rp2040-with-usb-type-a-host).
 Follow the instructions in the [README.md](arduino/midi2piousbhost/README.md) file
-in the `arduino` directory.
+in the `arduino` directory. If you want to use C code to use this board, be sure
+to add
+```
+export PICO_BOARD=adafruit_feather_rp2040_usb_host
+
+```
+before executing cmake or launching VS Code. See the `C-Code/REAMDE.md` for more information.
 
 # Hardware Dependencies
 This project is designed to run on the RP2040 chip. It is tested on a 
