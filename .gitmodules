@@ -1,9 +1,6 @@
 [submodule "lib/midi_uart_lib"]
 	path = C-Code/lib/midi_uart_lib
 	url = https://github.com/rppicomidi/midi_uart_lib.git
-[submodule "lib/usb_midi_host"]
-	path = C-Code/lib/usb_midi_host
-	url = https://github.com/rppicomidi/usb_midi_host
 [submodule "lib/ring_buffer_lib"]
 	path = C-Code/lib/ring_buffer_lib
 	url = https://github.com/rppicomidi/ring_buffer_lib
