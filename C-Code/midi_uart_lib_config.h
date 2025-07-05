@@ -34,4 +34,8 @@
 // something special with the MIDI UART LIB, you can change this
 #define MIDI_UART_LIB_BAUD_RATE 31250
 
+// The standard MIDI_UART_RING_BUFFER_LENGTH is defined in the driver code
+// If you want to customize the buffers, uncomment the following line and
+// set to a value you like
+// #define MIDI_UART_RING_BUFFER_LENGTH 128
 #endif
