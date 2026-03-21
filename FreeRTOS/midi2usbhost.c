@@ -78,12 +78,20 @@ static void on_midi_uart_irq(MIDI_UART_T *midi_uart);
 #elif MIDI_UART_NUM > 1 || MIDI_UART_NUM < 0
 #error "MIDI_UART_NUM must be 0 or 1"
 #endif
+#ifndef MIDI_UART_TX_GPIO
 #if MIDI_UART_NUM==0
-const uint MIDI_UART_TX_GPIO = 0;
-const uint MIDI_UART_RX_GPIO = 1;
+#define MIDI_UART_TX_GPIO 0
 #else
-const uint MIDI_UART_TX_GPIO = 4;
-const uint MIDI_UART_RX_GPIO = 5;
+#define MIDI_UART_TX_GPIO 4
+#endif
+#endif
+
+#ifndef MIDI_UART_RX_GPIO
+#if MIDI_UART_NUM==0
+#define MIDI_UART_RX_GPIO 1
+#else
+#define MIDI_UART_RX_GPIO 5
+#endif
 #endif
 
 
