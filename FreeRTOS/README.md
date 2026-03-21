@@ -1,21 +1,25 @@
-# midi2usbhost C Code Software
-This project is easiest to build with version 2.1.1 or later of the `pico-sdk`.
-This project relies on the [midi_uart_lib](https://github.com/rppicomidi/midi_uart_lib) and the
-[ring_buffer_lib](https://github.com/rppicomidi/ring_buffer_lib) libraries
-to implement the DIN MIDI.
-These libraries are git submodules. The USB MIDI Host library is now
-native to TinyUSB and is no longer a git submodule of this project.
+# midi2usbhost FreeRTOS-based C Code Software
+This project routes serial port MIDI to virtual cable
+0 of the connected USB MIDI device. If the USB MIDI device
+supports other virtual cables, this project ignores MIDI Out
+from the USB device and will not transmit to the USB device's
+MIDI IN.
+
+This project is an attempt to make the midi2usbhost software as
+responsive as possible. It uses the SMP version of FreeRTOS to
+hopefully improve TinyUSB responsiveness and it enables the UART FIFOs
+to reduce the number of UART-related interrupts. It also eliminates
+console printouts in favor of LED indicators. It uses one LED indicator
+each thats lights if the serial port MIDI IN or MIDI OUT buffers
+overflow. The main board LED shows USB host status: off means
+no USB MIDI device enumerated; on means USB MIDI device enumerated;
+blinking means more than one USB MIDI device have been connected
+via a hub.
+
+This project has been tested with version 2.2.0 of the `pico-sdk`.
 
 # What is the most recent major change?
-This project no longer depends on the the [usb_midi_host](https://github.com/rppicomidi/usb_midi_host)
-project. When the TinyUSB project merged the USB MIDI Host pull request,
-most of the API changed. The most significant change is that
-the the TinyUSB MIDI Host API uses a device index instead of the USB device address
-to reference MIDI devices. Also, the TinyUSB MIDI Host API changed some function names
-and removed the device string functionality.
-
-As an additional feature, this project now supports the Adafruit Feather RP2040
-with USB A host board.
+This is a new varient of the project.
 
 ## Set up your build environment
 Sections 2 and 3 of the [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
@@ -24,10 +28,21 @@ Visual Studio Code. Appendix C of the same document describes how to set
 up the build environment manually for command line use. Please choose
 a workflow you are comfortable with.
 
+## Install FreeRTOS-Kernel source code
+I recommend installing the FreeRTOS-Kernel source code at the same directory
+level as your pico-sdk source code.
+
+```
+cd ${PICO_SDK_PATH}/..
+git clone https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+```
+This code has been tested with the version of FreeRTOS-Kernel that has git
+commit hash fcc665325c033065cb6fd89d18a92f2ca611495e.
+
 ## Update TinyUSB
-As of this writing, the latest version of the pico-sdk (version 2.1.1) does not
-ship with a version of TinyUSB that supports USB MIDI Host. You will need
-to update TinyUSB to build this code. If you are using VS Code and installed
+Version 2.2.0 of the pico-sdk does not ship with the latest version of TinyUSB USB MIDI
+Host support. I recommend that you update TinyUSB to version 0.20.0 (or the latest
+release) to build this code. If you are using VS Code and installed
 the pico-sdk per sections 2 and 3 of the [Getting Started Guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf),
 you will find TinyUSB installed in `${HOME}/.pico-sdk/sdk/2.1.1/lib/tinyusb`.
 If you installed the pico-sdk per Appendix C of the same document, then
@@ -35,10 +50,11 @@ you will find TinyUSB installed in `${HOME}/pico/pico-sdk/lib/tinyusb`.
 
 ```
 cd [the directory where TinyUSB is installed]
-git checkout master
+git checkout 0.20.0
 git pull
 ```
-As of this writing, these steps will get you TinyUSB commit d3a9fee5cbd2490fa3d1e3976169e0c40e5a5e0c.
+I have also tested with this code with the TinyUSB master branch
+commit hash 8b59e6234dfe34f4d0658cea43b338eb04efa3c5.
 
 ## Get the project code
 Clone the midiusb2host project to a directory; if you manually installed the
@@ -52,28 +68,28 @@ git clone --recurse-submodules https://github.com/rppicomidi/midi2usbhost.git
 ```
 ## Command Line Build (skip if you want to use Visual Studio Code)
 
-Enter this series of commands (assumes you installed the `pico-sdk`
-and the `midid2usbhost` project in the `${HOME}/pico` directory)
+Enter this series of commands (assumes you installed the `pico-sdk`, the `FreeRTOS-Kernel`
+source and the `midid2usbhost` project in the `${HOME}/pico` directory)
 and your board will be defined in `${MYBOARD}`. See the Hardware Variations
 section for more information.
 ```
 export PICO_BOARD=${MYBOARD}
-export PICO_SDK_PATH=${HOME}/pico/pico-sdk/
-cd ${HOME}/pico/midi2usbhost/C-Code
+export PICO_SDK_PATH=${HOME}/pico/pico-sdk
+export FREERTOS_KERNEL_PATH=${HOME}/pico/FreeRTOS-Kernel
+cd ${HOME}/pico/midi2usbhost/FreeRTOS
 mkdir build
 cd build
-cmake -DPICO_BOARD=pico ..
+cmake ..
 make
 ```
 The build should complete with no errors. The build output is in the `build` directory you created in the steps above.
-Note that if your board is not a Raspberry Pi Pico, you should substitute your
-board name for `pico` in the line `cmake -DPICO_BOARD=pico ..`
 
 ## Visual Studio Code Build
 Run VS Code and import this project. It should import cleanly.
 Build the code using the Raspberry Pi Pico plugin controls.
-As long as the Pico SDK version is 2.1.1 or later and you
-have updated the TinyUSB version as described above, the
+As long as the Pico SDK version is 2.2.0 or later and you
+have updated the TinyUSB version as described above, and
+you have installed the FreeRTOS-Kernel source, the
 program should build with no errors.
 
 ## Run the code
@@ -85,52 +101,34 @@ to load the `midi2usbhost.elf` file to the board using VS Code,
 or by using openocd command
 line tools.
 
-Once the program is loaded, if all goes well, you should see the LED
-on your Pico board blinking off and on once per second and your should see the following
-in your terminal window:
-
-```
-Pico MIDI Host to MIDI UART Adapter
-Configured MIDI UART 1 for 31250 baud
-```
 # Hardware Variations
 The values you can substitute for `${MYBOARD}` include all of the boards that
 are supported in the `${PICO_SDK_PATH}/src/boards/include/boards` directory.
-As of this writing, only the Adafruit Feather RP2040 with USB A Host board
-supports using the Pico PIO USB library and 2 GPIO pins for the USB MIDI host.
-All other boards support using the built-in USB port for the USB Host port.
 
 If you are targeting a board other than the Raspberry Pi Pico that does not have UART 1
 available or does not have GPIO 4 or GPIO 5, which are the default pins for, you can
 send data to CMake to properly target your hardware. There are 3 variables you can to set
-
 - `MIDI_UART_NUM` can be 0 or 1 to depending on whether you use uart0 or uart1 for MIDI. The default value is 1.
-- `MIDI_UART_TX_GPIO` is the GPIO number (not the package pin number) of the UART's transmit pin. The default is 4. If you choose a different pin, make sure that the
-UART you are using as set by `MIDI_UART_NUM` can use that pin for the UART TX function.
-- `MIDI_UART_RX_GPIO` is the GPIO number (not the package pin number) of the UART's receiver pin. The default is 5. If you choose a different pin, make sure that the
-UART you are using as set by `MIDI_UART_NUM` can use that pin for the UART RX function.
+- `MIDI_UART_TX_GPIO` defaults to 0 for uart0 and 4 for uart1. If you redefine it, make sure it is consistent with your choice of `MIDI_UART_NUM`
+- `MIDI_UART_RX_GPIO` defaults to 1 for uart0 and 5 for uart1. If you redefine it, make sure it is consistent with your choice of `MIDI_UART_NUM`
 
-You can change these values by setting them as environment variables and then running
-`cmake` or you can pass them directly on the `cmake` command line using the `-D` option.
-For example, to use UART 0 on GPIO 12 & 13 as the MIDI UART you can build your code this way:
-```
-cd build
-cmake -DMIDI_UART_NUM=0 -DMIDI_UART_TX_GPIO=12 -DDMIDI_UART_RX_GPIO=13 ..
-make
-```
-or this way:
-```
-export MIDI_UART_NUM=0
-export MIDI_UART_TX_GPIO=12
-export MIDI_UART_RX_GPIO=13
-cmake ..
-make
-```
-I find the latter method simpler when I am using the VS Code workflow to build the code.
+Similarly, you can change what GPIO pins are used for indicator LEDs.
+- `LED_RX_OVERFLOW_GPIO` defaults to GPIO 2
+- `LED_TX_OVERFLOW_GPIO` defaults to GPIO 3
+- `LED_HOST_STATUS_GPIO` defaults to the pico SDK's pre-defined `PICO_DEFAULT_LED_PIN`. Note that Pico W and Pico2 W boards do not
+control the on-board LED by directly toggling a GPIO pin so `PICO_DEFAULT_LED_PIN` is undefined; if you target a Pico W board,
+then this build will fail unless you redefine LED_HOST_STATUS_GPIO.
 
-Note that if your board does not control and on-board LED by toggling a GPIO pin,
-the this program will not control the on-board LED. The Pico W board is an example
-of a board with this limitation.
+# The UART transmit and receive queues, and managing overflows
+The overflow LEDs will remain illumated after the overflow conidition clears for `OVERFLOW_TIMER_CLEAR_LAG_MS` milliseconds.
+The idea is to keep the LED on long enough so you notice the cause of the problem. If it is too short or long, you can change it.
+
+The queues for buffering data to and from the UART are `MIDI_UART_QUEUE_LENGTH` bytes long. If you are getting a lot of
+overflows, then you might want to make the queues longer. On the other hand, every 3 bytes in the queue represents about 1 millisecond.
+If your USB device is sending so much data so quickly that it overwhelms the slow data rate of serial port MIDI, you might want to
+consider modifying the code to filter and throttle the data rate. For example, a USB fader controller might overwhelm serial port
+MIDI if you move more than one fader at a time too quickly. The fix might be to throw out some intermediate fader moves if
+the transmit queue is filling up.
 
 # Troubleshooting
 Prior to TinyUSB adding native support for USB MIDI Host, this project
