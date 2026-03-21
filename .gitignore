@@ -1,3 +1,5 @@
 C-Code/build
 C-Code/.vscode/.cortex-debug.*
+FreeRTOS/build
+FreeRTOS/.vscode/.cortex-debug.*
 
